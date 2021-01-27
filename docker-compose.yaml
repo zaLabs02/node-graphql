@@ -1,0 +1,112 @@
+version: '3.1'
+
+services:
+  frontend:
+    container_name: node-app-frontend
+    # restart: always
+    stdin_open: true
+    command: npm start
+    ports:
+      - 80:3000
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code
+    links: 
+      - back-end
+    networks: 
+      - front
+    #   - db-mongo
+    depends_on:
+      - 'back-end'
+
+  back-end:
+    container_name: node-app
+    restart: always
+    command: npm start
+    ports:
+      - 8000:8000
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    volumes:
+      - .:/code
+    links: 
+      - db-mongo
+    networks: 
+      - front
+      - back
+
+      # - frontend
+  
+  db-mongo:
+    image: mongo
+    restart: always
+    container_name: node-db-mongo
+    ports:
+      - '27017:27017'
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+    networks: 
+      - back
+
+  mongo-express:
+    image: mongo-express
+    restart: always
+    container_name: node-db-express
+    ports:
+      - 8081:8081
+    depends_on:
+      - 'db-mongo'
+    environment:
+      ME_CONFIG_MONGODB_ADMINUSERNAME: root
+      ME_CONFIG_MONGODB_ADMINPASSWORD: 1234
+      ME_CONFIG_MONGODB_SERVER: db-mongo
+    networks: 
+      - back
+
+networks:
+  front:
+  back:
+
+    # version: '3.1'
+
+    # services:
+    #   web:
+    #     container_name: node-app
+    #     restart: always
+    #     command: npm start
+    #     ports:
+    #       - 80:8000
+    #     build:
+    #       context: ./server
+    #       dockerfile: Dockerfile
+    #     volumes:
+    #       - .:/code
+    #     links: 
+    #       - db-mongo
+      
+    #   db-mongo:
+    #     image: mongo
+    #     restart: always
+    #     container_name: node-db-mongo
+    #     ports:
+    #       - '27017:27017'
+    #     environment:
+    #       MONGO_INITDB_ROOT_USERNAME: root
+    #       MONGO_INITDB_ROOT_PASSWORD: 1234
+    
+    #   mongo-express:
+    #     image: mongo-express
+    #     restart: always
+    #     container_name: node-db-express
+    #     ports:
+    #       - 8081:8081
+    #     depends_on:
+    #       - 'db-mongo'
+    #     environment:
+    #       ME_CONFIG_MONGODB_ADMINUSERNAME: root
+    #       ME_CONFIG_MONGODB_ADMINPASSWORD: 1234
+    #       ME_CONFIG_MONGODB_SERVER: db-mongo
